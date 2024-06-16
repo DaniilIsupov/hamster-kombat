@@ -1,5 +1,11 @@
 import puppeteer, { KnownDevices } from 'puppeteer';
 
+declare global {
+    interface Window {
+        useNuxtApp?: CallableFunction;
+    }
+}
+
 const Pixel5 = KnownDevices['Pixel 5'];
 
 const browser = await puppeteer.launch({
@@ -15,3 +21,83 @@ const hash =
     'tgWebAppData=&tgWebAppVersion=&tgWebAppPlatform=&tgWebAppThemeParams=';
 
 await page.goto(`https://hamsterkombat.io/clicker/#${hash}`);
+
+const _userTap = await page.waitForSelector('.user-tap').catch(console.log);
+
+await page.evaluate(({}) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'emulate-wrapper';
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '0';
+    wrapper.style.left = '0';
+    wrapper.style.zIndex = '3';
+    document.body.appendChild(wrapper);
+
+    const tapButton = document.createElement('button');
+    tapButton.textContent = 'tap';
+    tapButton.onclick = () => {
+        window
+            .useNuxtApp?.()
+            .$pinia._s.get('clicker')
+            .postTap(Math.floor(Math.random() * 512))
+            .then(console.log);
+    };
+    wrapper.appendChild(tapButton);
+
+    const buyUpgradeButton = document.createElement('button');
+    buyUpgradeButton.textContent = 'buyUpgrade';
+    buyUpgradeButton.onclick = async () => {
+        if (!window.useNuxtApp) {
+            return;
+        }
+
+        const balanceCoins = await window.useNuxtApp().$pinia._s.get('clicker')
+            .balanceCoins;
+
+        /** @type Array */
+        const upgrades = await window
+            .useNuxtApp()
+            .$pinia._s.get('upgrade')
+            .upgradesForBuy.filter(
+                (u) => u.isAvailable && u.profitPerHour > 0 && !u.isExpired
+            )
+            .sort(
+                (a, b) =>
+                    a.profitPerHourDelta / a.price -
+                    b.profitPerHourDelta / b.price
+            )
+            .map((u) => {
+                const {
+                    name,
+                    section,
+                    price,
+                    profitPerHourDelta,
+                    cooldownSeconds,
+                    id
+                } = u;
+                return {
+                    name,
+                    section,
+                    price,
+                    profitPerHourDelta,
+                    cooldownSeconds,
+                    id
+                };
+            })
+            .reverse();
+        console.log('upgrades', upgrades);
+
+        const bestIndex = upgrades.findIndex(
+            (u) => !u.cooldownSeconds && u.price < balanceCoins
+        );
+        const best = upgrades[bestIndex];
+        console.log(`best (${bestIndex})`, best);
+
+        await window
+            .useNuxtApp()
+            .$pinia._s.get('upgrade')
+            .postBuyUpgrade(best.id)
+            .then(console.log);
+    };
+    wrapper.appendChild(buyUpgradeButton);
+}, {});
