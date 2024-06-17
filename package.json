@@ -10,8 +10,8 @@
     "license": "ISC",
     "type": "module",
     "dependencies": {
-        "puppeteer": "^22.11.0",
+        "puppeteer": "^22.11.1",
         "random-int": "^3.0.0",
-        "tsx": "^4.15.5"
+        "tsx": "^4.15.6"
     }
 }
