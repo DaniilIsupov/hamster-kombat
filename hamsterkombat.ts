@@ -100,12 +100,25 @@ async function open(hash: string) {
 
             const tapButton = document.createElement('button');
             tapButton.textContent = 'tap';
-            tapButton.onclick = () => {
-                window
+            tapButton.onclick = async () => {
+                const response = await window
                     .useNuxtApp?.()
                     .$pinia._s.get('clicker')
-                    .postTap(Math.floor(Math.random() * 512))
-                    .then(console.log);
+                    .postTap(Math.floor(Math.random() * 1024));
+                console.log('postTap response', response);
+
+                if (
+                    response?.clickerUser.boosts.BoostFullAvailableTaps.level <
+                        6 &&
+                    response.clickerUser.availableTaps <
+                        response.clickerUser.earnPerTap
+                ) {
+                    window
+                        .useNuxtApp?.()
+                        .$pinia._s.get('boost')
+                        .postBuyBoost('BoostFullAvailableTaps')
+                        .then(console.log);
+                }
             };
             wrapper.appendChild(tapButton);
 
