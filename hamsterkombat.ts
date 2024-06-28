@@ -108,8 +108,12 @@ async function open(hash: string) {
                 console.log('postTap response', response);
 
                 if (
-                    response?.clickerUser.boosts.BoostFullAvailableTaps.level <
-                        6 &&
+                    new Date(
+                        response?.clickerUser.boosts.BoostFullAvailableTaps
+                            .lastUpgradeAt *
+                            1000 +
+                            60 * 60 * 1000
+                    ) < new Date() &&
                     response.clickerUser.availableTaps <
                         response.clickerUser.earnPerTap
                 ) {
