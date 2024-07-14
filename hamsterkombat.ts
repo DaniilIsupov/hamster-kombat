@@ -24,7 +24,7 @@ async function open(hash: string) {
     const page = await browser.newPage();
     await page.emulate(Pixel5);
 
-    await page.goto(`https://hamsterkombat.io/clicker/#${hash}`);
+    await page.goto(`https://hamsterkombatgame.io/clicker/#${hash}`);
 
     const _userTap = await page.waitForSelector('.user-tap').catch(console.log);
 
