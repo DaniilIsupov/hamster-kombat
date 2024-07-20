@@ -4,6 +4,8 @@ declare global {
     interface Window {
         useNuxtApp?: CallableFunction;
         buyUpgrade: (options?: { calculationOnly?: boolean }) => Promise<void>;
+        unlockUpgrade: () => Promise<void>;
+        Telegram: any;
     }
 }
 
@@ -90,6 +92,52 @@ async function open(hash: string) {
                     .then(console.log);
             };
 
+            window.unlockUpgrade = async () => {
+                if (!window.useNuxtApp) {
+                    return;
+                }
+
+                const balanceCoins = await window
+                    .useNuxtApp()
+                    .$pinia._s.get('clicker').balanceCoins;
+
+                /** @type Array */
+                const upgradesForBuy = await window
+                    .useNuxtApp()
+                    .$pinia._s.get('upgrade').upgradesForBuy;
+                console.log('upgradesForBuy', upgradesForBuy);
+
+                /** @type Array */
+                const upgrades = upgradesForBuy
+                    .filter(
+                        (u) =>
+                            !u.isAvailable &&
+                            !['ReferralCount', 'MoreReferralsCount'].includes(
+                                u.condition?._type
+                            ) &&
+                            u.profitPerHour > 0 &&
+                            !u.isExpired
+                    )
+                    .sort(
+                        (a, b) =>
+                            a.profitPerHourDelta / a.price -
+                            b.profitPerHourDelta / b.price
+                    )
+                    .map((u) => {
+                        return {
+                            ...u
+                        };
+                    })
+                    .reverse();
+                console.log('upgrades', upgrades);
+
+                const bestIndex = upgrades.findIndex(
+                    (u) => !u.cooldownSeconds && u.price < balanceCoins
+                );
+                const best = upgrades[bestIndex];
+                console.log(`best (${bestIndex})`, best);
+            };
+
             const wrapper = document.createElement('div');
             wrapper.className = 'emulate-wrapper';
             wrapper.style.position = 'fixed';
@@ -136,6 +184,11 @@ async function open(hash: string) {
             buyUpgradeButton.textContent = 'buyUpgrade';
             buyUpgradeButton.onclick = () => window.buyUpgrade();
             wrapper.appendChild(buyUpgradeButton);
+
+            const unlockUpgradeButton = document.createElement('button');
+            unlockUpgradeButton.textContent = 'unlockUpgrade';
+            unlockUpgradeButton.onclick = () => window.unlockUpgrade();
+            wrapper.appendChild(unlockUpgradeButton);
         } catch (error) {
             console.log('catch', error);
         }
