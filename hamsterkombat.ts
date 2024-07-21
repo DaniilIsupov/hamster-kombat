@@ -189,6 +189,21 @@ async function open(hash: string) {
             unlockUpgradeButton.textContent = 'unlockUpgrade';
             unlockUpgradeButton.onclick = () => window.unlockUpgrade();
             wrapper.appendChild(unlockUpgradeButton);
+
+            const earnButton = document.createElement('button');
+            earnButton.textContent = 'earn';
+            earnButton.onclick = async () => {
+                await window
+                    .useNuxtApp?.()
+                    .$pinia._s.get('earn')
+                    .postCheckTask(
+                        await window
+                            .useNuxtApp?.()
+                            .$pinia._s.get('earn')
+                            .tasks.filter((t) => !t.isCompleted)[0].id
+                    );
+            };
+            wrapper.appendChild(earnButton);
         } catch (error) {
             console.log('catch', error);
         }
