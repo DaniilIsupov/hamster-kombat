@@ -175,18 +175,18 @@ async function open(hash: string) {
             wrapper.appendChild(tapButton);
 
             const getProfitableUpgradeButton = document.createElement('button');
-            getProfitableUpgradeButton.textContent = 'getProfitableUpgrade';
+            getProfitableUpgradeButton.textContent = 'profitable';
             getProfitableUpgradeButton.onclick = () =>
                 window.buyUpgrade({ calculationOnly: true });
             wrapper.appendChild(getProfitableUpgradeButton);
 
             const buyUpgradeButton = document.createElement('button');
-            buyUpgradeButton.textContent = 'buyUpgrade';
+            buyUpgradeButton.textContent = 'buy';
             buyUpgradeButton.onclick = () => window.buyUpgrade();
             wrapper.appendChild(buyUpgradeButton);
 
             const unlockUpgradeButton = document.createElement('button');
-            unlockUpgradeButton.textContent = 'unlockUpgrade';
+            unlockUpgradeButton.textContent = 'unlock';
             unlockUpgradeButton.onclick = () => window.unlockUpgrade();
             wrapper.appendChild(unlockUpgradeButton);
 
@@ -204,6 +204,19 @@ async function open(hash: string) {
                     );
             };
             wrapper.appendChild(earnButton);
+
+            const morseButton = document.createElement('button');
+            morseButton.textContent = 'morse';
+            morseButton.onclick = async () => {
+                const morseStore = window.useNuxtApp?.().$pinia._s.get('morse');
+                if (!morseStore) {
+                    return;
+                }
+
+                morseStore.morse_decoded = morseStore.dailyCipher.cipher;
+                morseStore.postClaimDailyCipher().then(console.log);
+            };
+            wrapper.appendChild(morseButton);
         } catch (error) {
             console.log('catch', error);
         }
