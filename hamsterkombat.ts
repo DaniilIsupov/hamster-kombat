@@ -193,15 +193,22 @@ async function open(hash: string) {
             const earnButton = document.createElement('button');
             earnButton.textContent = 'earn';
             earnButton.onclick = async () => {
+                const tasks = await window
+                    .useNuxtApp?.()
+                    .$pinia._s.get('earn')
+                    .tasks.filter((t) => !t.isCompleted)
+                    .map((t) => ({ ...t }));
+                console.log('tasks', tasks);
+                const firstTask = tasks.find((t) => t.id !== 'invite_friends');
+                console.log('firstTask', firstTask);
+                if (!firstTask) {
+                    return;
+                }
+
                 await window
                     .useNuxtApp?.()
                     .$pinia._s.get('earn')
-                    .postCheckTask(
-                        await window
-                            .useNuxtApp?.()
-                            .$pinia._s.get('earn')
-                            .tasks.filter((t) => !t.isCompleted)[0].id
-                    );
+                    .postCheckTask(firstTask.id);
             };
             wrapper.appendChild(earnButton);
 
