@@ -39,7 +39,7 @@ async function open(hash: string) {
 
                 const balanceCoins = await window
                     .useNuxtApp()
-                    .$pinia._s.get('clicker').balanceCoins;
+                    .$pinia._s.get('clicker').balanceDiamonds;
 
                 /** @type Array */
                 const upgrades = await window
@@ -76,7 +76,7 @@ async function open(hash: string) {
                 console.log('upgrades', upgrades);
 
                 const bestIndex = upgrades.findIndex(
-                    (u) => !u.cooldownSeconds && u.price < balanceCoins
+                    (u) => !u.cooldownSeconds && u.price <= balanceCoins
                 );
                 const best = upgrades[bestIndex];
                 console.log(`best (${bestIndex})`, best);
